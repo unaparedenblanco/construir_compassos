@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ca" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructor de Compàs Musical</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        music: {
+                            purple: '#8B5CF6',
+                            pink: '#EC4899',
+                            blue: '#3B82F6',
+                            green: '#10B981',
+                            yellow: '#F59E0B',
+                            red: '#EF4444',
+                            darkBg: '#0F172A',
+                            darkCard: '#1E293B',
+                            darkBorder: '#334155'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            min-height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .staff-line {
+            height: 2px;
+            width: 100%;
+        }
+
+        /* Animated Highlight on Note Playback */
+        .note-playing {
+            transform: scale(1.2) translateY(-4px);
+            filter: drop-shadow(0 0 14px #8B5CF6);
+            color: #A78BFA !important;
+        }
+
+        /* Drag over target effect */
+        .drag-over {
+            background-color: rgba(139, 92, 246, 0.15) !important;
+            border-color: #8B5CF6 !important;
+        }
+
+        /* Custom scrollbar for Dark & Light modes */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 9999px;
+        }
+        body.dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        body.dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        body.dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748B;
+        }
+
+        /* Responsive Modal & Container Scroll Improvements */
+        @media (max-height: 700px) {
+            #level-modal-content {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body class="dark bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- LEVEL SELECTION MODAL OVERLAY -->
+    <div id="level-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto">
+        <div id="level-modal-content" class="bg-slate-800 dark:bg-slate-800 light:bg-white text-slate-100 dark:text-slate-100 light:text-slate-900 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl flex flex-col gap-6 relative my-auto">
+            
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center bg-purple-600/20 text-purple-400 light:bg-purple-100 light:text-purple-700 p-3 rounded-2xl mb-1">
+                    <i class="fa-solid fa-layer-group text-3xl"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white dark:text-white light:text-slate-900">
+                    Constructor de Compàs Musical
+                </h2>
+                <p class="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">
+                    Tria el nivell de dificultat per començar a construir els teus compasos:
+                </p>
+            </div>
+
+            <!-- Level Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                
+                <!-- Nivell 1 -->
+                <button onclick="selectLevel(1)" class="bg-slate-700/50 hover:bg-purple-900/40 dark:bg-slate-700/50 dark:hover:bg-purple-900/40 light:bg-slate-50 light:hover:bg-purple-50/80 border-2 border-slate-600 dark:border-slate-600 light:border-slate-200 hover:border-purple-500 light:hover:border-purple-500 rounded-2xl p-4 text-left transition group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-black uppercase tracking-wider text-purple-400 light:text-purple-700">Nivell 1</span>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 light:bg-purple-100 light:text-purple-800 px-2 py-0.5 rounded-full font-extrabold">Iniciació</span>
+                        </div>
+                        <h3 class="font-extrabold text-base text-white dark:text-white light:text-slate-900 mb-1">Figures Bàsiques</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 leading-snug">
+                            Blanca, Negra, 2 Corxeres juntes, Silenci de blanca, Silenci de negra.
+                        </p>
+                    </div>
+                    <div class="mt-3 text-xs font-bold text-purple-400 light:text-purple-700 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                        Selecciona Nivell 1 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </button>
+
+                <!-- Nivell 2 -->
+                <button onclick="selectLevel(2)" class="bg-slate-700/50 hover:bg-purple-900/40 dark:bg-slate-700/50 dark:hover:bg-purple-900/40 light:bg-slate-50 light:hover:bg-purple-50/80 border-2 border-slate-600 dark:border-slate-600 light:border-slate-200 hover:border-purple-500 light:hover:border-purple-500 rounded-2xl p-4 text-left transition group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-black uppercase tracking-wider text-purple-400 light:text-purple-700">Nivell 2</span>
+                            <span class="text-[10px] bg-blue-500/20 text-blue-300 light:bg-blue-100 light:text-blue-800 px-2 py-0.5 rounded-full font-extrabold">Agrupacions</span>
+                        </div>
+                        <h3 class="font-extrabold text-base text-white dark:text-white light:text-slate-900 mb-1">Subdivisions Juntes</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 leading-snug">
+                            Blanca, Negra, 2 Corxeres (juntes), 4 Semicorxeres (juntes), Silenci de blanca, Silenci de negra.
+                        </p>
+                    </div>
+                    <div class="mt-3 text-xs font-bold text-purple-400 light:text-purple-700 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                        Selecciona Nivell 2 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </button>
+
+                <!-- Nivell 3 -->
+                <button onclick="selectLevel(3)" class="bg-slate-700/50 hover:bg-purple-900/40 dark:bg-slate-700/50 dark:hover:bg-purple-900/40 light:bg-slate-50 light:hover:bg-purple-50/80 border-2 border-slate-600 dark:border-slate-600 light:border-slate-200 hover:border-purple-500 light:hover:border-purple-500 rounded-2xl p-4 text-left transition group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-black uppercase tracking-wider text-purple-400 light:text-purple-700">Nivell 3</span>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 light:bg-amber-100 light:text-amber-800 px-2 py-0.5 rounded-full font-extrabold">Intermedi</span>
+                        </div>
+                        <h3 class="font-extrabold text-base text-white dark:text-white light:text-slate-900 mb-1">Corxera Individual</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 leading-snug">
+                            Blanca, Negra, Corxera, Silenci de blanca, Silenci de negra, Silenci de corxera.
+                        </p>
+                    </div>
+                    <div class="mt-3 text-xs font-bold text-purple-400 light:text-purple-700 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                        Selecciona Nivell 3 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </button>
+
+                <!-- Nivell 4 -->
+                <button onclick="selectLevel(4)" class="bg-slate-700/50 hover:bg-purple-900/40 dark:bg-slate-700/50 dark:hover:bg-purple-900/40 light:bg-slate-50 light:hover:bg-purple-50/80 border-2 border-slate-600 dark:border-slate-600 light:border-slate-200 hover:border-purple-500 light:hover:border-purple-500 rounded-2xl p-4 text-left transition group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-black uppercase tracking-wider text-purple-400 light:text-purple-700">Nivell 4</span>
+                            <span class="text-[10px] bg-rose-500/20 text-rose-300 light:bg-rose-100 light:text-rose-800 px-2 py-0.5 rounded-full font-extrabold">Avançat</span>
+                        </div>
+                        <h3 class="font-extrabold text-base text-white dark:text-white light:text-slate-900 mb-1">Totes les Figures</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 leading-snug">
+                            Blanca, Negra, Corxera, Semicorxera, Silencis de blanca, negra, corxera i semicorxera.
+                        </p>
+                    </div>
+                    <div class="mt-3 text-xs font-bold text-purple-400 light:text-purple-700 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                        Selecciona Nivell 4 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </button>
+
+            </div>
+
+            <div class="text-center text-xs text-slate-400 dark:text-slate-400 light:text-slate-500 pt-2 border-t border-slate-700/50 dark:border-slate-700/50 light:border-slate-200">
+                Pots canviar de nivell quan vulguis des del botó superior de l'aplicació.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="bg-slate-800/90 dark:bg-slate-800/90 light:bg-white border-b border-slate-700 dark:border-slate-700 light:border-slate-200 sticky top-0 z-30 backdrop-blur-md transition-colors shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            
+            <!-- App Branding -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-purple-600 text-white p-2.5 rounded-xl shadow-lg shadow-purple-500/20">
+                    <i class="fa-solid fa-music text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-extrabold text-white dark:text-white light:text-slate-900 tracking-tight leading-tight">
+                        Constructor de Compàs
+                    </h1>
+                    <p class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-500">Miquel Castellá</p>
+                </div>
+            </div>
+
+            <!-- Top Right Actions: Level Switcher, Tempo Badge & Dark/Light Mode Toggle -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                
+                <!-- Change Level Button -->
+                <button onclick="openLevelModal()" class="flex items-center space-x-1.5 bg-slate-700 hover:bg-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 light:bg-slate-100 light:hover:bg-slate-200 text-purple-300 dark:text-purple-300 light:text-purple-700 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition border border-transparent light:border-slate-200">
+                    <i class="fa-solid fa-layer-group text-purple-400 light:text-purple-600"></i>
+                    <span id="current-level-badge">Nivell 1</span>
+                </button>
+
+                <!-- Fixed 66 BPM Badge -->
+                <div class="hidden sm:flex items-center space-x-1.5 bg-purple-950/60 dark:bg-purple-950/60 light:bg-purple-50 border border-purple-800/50 light:border-purple-200 text-purple-300 light:text-purple-800 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold shadow-inner">
+                    <i class="fa-solid fa-gauge-high text-purple-400 light:text-purple-600"></i>
+                    <span>66 BPM</span>
+                </div>
+
+                <!-- Dark / Light Mode Toggle Button -->
+                <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2.5 bg-slate-700 hover:bg-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 light:bg-slate-100 light:hover:bg-slate-200 text-amber-400 dark:text-amber-400 light:text-slate-700 rounded-xl transition flex items-center justify-center border border-transparent light:border-slate-200" title="Canviar Mode Fosc / Clar">
+                    <i id="theme-toggle-icon" class="fa-solid fa-sun text-lg"></i>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-5">
+
+        <!-- Time Signature & Playback Controls Bar -->
+        <div class="bg-slate-800 dark:bg-slate-800 light:bg-white p-4 rounded-2xl border border-slate-700 dark:border-slate-700 light:border-slate-200 shadow-xl flex flex-wrap items-center justify-between gap-4 transition-colors">
+            
+            <!-- Time Signatures -->
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-slate-400 dark:text-slate-400 light:text-slate-500 uppercase tracking-wider mr-1">Mètrica:</span>
+                <div class="flex items-center space-x-1.5" id="ts-buttons">
+                    <button onclick="setTimeSignature('2/4')" data-ts="2/4" class="ts-btn active bg-purple-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-sm transition shadow-md shadow-purple-600/30">2/4</button>
+                    <button onclick="setTimeSignature('3/4')" data-ts="3/4" class="ts-btn bg-slate-700 dark:bg-slate-700 light:bg-slate-100 text-slate-300 dark:text-slate-300 light:text-slate-700 hover:bg-slate-600 light:hover:bg-slate-200 font-extrabold px-3 py-1.5 rounded-xl text-sm transition border border-transparent light:border-slate-200">3/4</button>
+                    <button onclick="setTimeSignature('4/4')" data-ts="4/4" class="ts-btn bg-slate-700 dark:bg-slate-700 light:bg-slate-100 text-slate-300 dark:text-slate-300 light:text-slate-700 hover:bg-slate-600 light:hover:bg-slate-200 font-extrabold px-3 py-1.5 rounded-xl text-sm transition border border-transparent light:border-slate-200">4/4</button>
+                </div>
+            </div>
+
+            <!-- Playback and Reset Controls -->
+            <div class="flex items-center space-x-2">
+                <button id="play-btn" onclick="togglePlayback()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-play text-sm"></i>
+                    <span>Reproduir</span>
+                </button>
+                <button id="stop-btn" onclick="stopPlayback()" class="bg-slate-700 dark:bg-slate-700 light:bg-slate-100 hover:bg-slate-600 light:hover:bg-slate-200 text-slate-300 dark:text-slate-300 light:text-slate-700 font-bold p-2.5 rounded-xl transition border border-transparent light:border-slate-200" title="Aturar">
+                    <i class="fa-solid fa-square text-sm"></i>
+                </button>
+                <div class="h-6 w-px bg-slate-700 dark:bg-slate-700 light:bg-slate-200 mx-1"></div>
+                <button onclick="clearMeasure()" class="bg-rose-950/40 hover:bg-rose-900/60 light:bg-rose-50 light:hover:bg-rose-100 text-rose-400 light:text-rose-600 font-bold px-3 py-2 rounded-xl text-sm border border-rose-800/40 light:border-rose-200 flex items-center space-x-1.5 transition">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span>Buidar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Palette with 2 Tabs: Figures & Silencis directly ABOVE Staff -->
+        <div class="bg-slate-800 dark:bg-slate-800 light:bg-white p-4 rounded-2xl border border-slate-700 dark:border-slate-700 light:border-slate-200 shadow-xl flex flex-col gap-3 transition-colors">
+            
+            <!-- Palette Header & Tabs Selector -->
+            <div class="flex flex-wrap items-center justify-between border-b border-slate-700/80 dark:border-slate-700/80 light:border-slate-200 pb-3 gap-2">
+                
+                <!-- Tab Buttons -->
+                <div class="flex items-center bg-slate-900/70 dark:bg-slate-900/70 light:bg-slate-100 p-1 rounded-xl border border-slate-700 dark:border-slate-700 light:border-slate-200">
+                    <button id="tab-btn-figures" onclick="switchTab('figures')" class="px-4 py-1.5 rounded-lg text-xs font-extrabold flex items-center space-x-2 transition bg-purple-600 text-white shadow-sm">
+                        <i class="fa-solid fa-music"></i>
+                        <span>Figures</span>
+                    </button>
+                    <button id="tab-btn-rests" onclick="switchTab('rests')" class="px-4 py-1.5 rounded-lg text-xs font-extrabold text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white light:hover:text-slate-900 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-pause"></i>
+                        <span>Silencis</span>
+                    </button>
+                </div>
+
+                <span class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-500 italic">
+                    Fes clic o arrossega la figura al compàs
+                </span>
+            </div>
+
+            <!-- Tab 1: Figures Palette -->
+            <div id="tab-content-figures" class="flex items-center gap-2 overflow-x-auto py-1">
+                <!-- Dynamically Populated -->
+            </div>
+
+            <!-- Tab 2: Silencis Palette -->
+            <div id="tab-content-rests" class="hidden flex items-center gap-2 overflow-x-auto py-1">
+                <!-- Dynamically Populated -->
+            </div>
+
+        </div>
+
+        <!-- Musical Staff Area (Strictly 1 Single Measure) -->
+        <div id="measure-card" class="bg-slate-800 dark:bg-slate-800 light:bg-white rounded-2xl p-6 shadow-xl border-2 border-slate-700 dark:border-slate-700 light:border-slate-200 flex flex-col gap-5 transition-all">
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-base font-extrabold text-white dark:text-white light:text-slate-900">Compàs Únic</h2>
+                    <span id="status-badge" class="text-xs font-extrabold px-3 py-1 rounded-full bg-slate-700 text-slate-300">
+                        Incomplet
+                    </span>
+                </div>
+                <div class="text-xs text-slate-400 dark:text-slate-400 light:text-slate-500 flex items-center space-x-1">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span id="ts-description-text">2 temps per compàs</span>
+                </div>
+            </div>
+
+            <!-- Pentagram Canvas Container -->
+            <div id="canvas-container" class="relative h-36 my-1 flex items-center justify-start px-4 overflow-x-auto overflow-y-hidden bg-slate-900 dark:bg-slate-900 light:bg-slate-50 rounded-xl border border-slate-700 dark:border-slate-700 light:border-slate-200 shadow-inner transition-colors"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)">
+                
+                <!-- 5 Pentagram Lines -->
+                <div class="absolute inset-0 flex flex-col justify-between py-7 px-1 pointer-events-none opacity-40 light:opacity-70">
+                    <div class="staff-line bg-slate-400 dark:bg-slate-400 light:bg-slate-700"></div>
+                    <div class="staff-line bg-slate-400 dark:bg-slate-400 light:bg-slate-700"></div>
+                    <div class="staff-line bg-slate-400 dark:bg-slate-400 light:bg-slate-700"></div>
+                    <div class="staff-line bg-slate-400 dark:bg-slate-400 light:bg-slate-700"></div>
+                    <div class="staff-line bg-slate-400 dark:bg-slate-400 light:bg-slate-700"></div>
+                </div>
+
+                <!-- Clef & Time Signature Symbol -->
+                <div class="relative z-10 flex items-center space-x-3 mr-4 border-r-2 border-slate-500 dark:border-slate-500 light:border-slate-800 pr-3 select-none">
+                    <span class="text-4xl font-serif font-bold text-slate-200 dark:text-slate-200 light:text-slate-900 leading-none">𝄞</span>
+                    <div class="flex flex-col text-center font-extrabold text-base leading-tight text-slate-200 dark:text-slate-200 light:text-slate-900">
+                        <span id="ts-num">2</span>
+                        <span id="ts-den">4</span>
+                    </div>
+                </div>
+
+                <!-- Measure Notes Container -->
+                <div id="measure-items-container" class="relative z-10 flex items-center gap-3 flex-1 overflow-x-auto py-2">
+                    <!-- Injected dynamically -->
+                </div>
+
+                <!-- Double Barline -->
+                <div class="absolute right-0 top-0 bottom-0 flex items-center pr-2 pointer-events-none">
+                    <div class="w-1 h-full bg-slate-400 dark:bg-slate-400 light:bg-slate-800 mr-1"></div>
+                    <div class="w-2.5 h-full bg-slate-400 dark:bg-slate-400 light:bg-slate-800"></div>
+                </div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+                    <span id="status-text-details" class="text-slate-300 dark:text-slate-300 light:text-slate-700">Temps acumulat: 0 / 2 temps</span>
+                    <span id="percentage-badge" class="text-purple-400 light:text-purple-700 font-extrabold">0%</span>
+                </div>
+                <div class="w-full bg-slate-900 dark:bg-slate-900 light:bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-700 dark:border-slate-700 light:border-slate-300">
+                    <div id="progress-bar" class="bg-purple-500 h-full transition-all duration-300" style="width: 0%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800/80 dark:bg-slate-800/80 light:bg-white border-t border-slate-700 dark:border-slate-700 light:border-slate-200 py-3 mt-auto transition-colors">
+        <div class="max-w-4xl mx-auto px-4 text-center text-xs text-slate-400 dark:text-slate-400 light:text-slate-500">
+            Constructor de Compàs Musical &bull; Reproducció fixa a 66 BPM
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic Updates for Palette Items Light Mode Brightness -->
+    <script>
+        // Custom SVG for 4 Semicorxeres Unides (Group of 4 Sixteenth Notes with Double Beam)
+        const SVG_FOUR_SIXTEENTHS = `
+            <svg class="w-11 h-9 inline-block fill-current" viewBox="0 0 60 42" xmlns="http://www.w3.org/2000/svg">
+                <!-- 4 Noteheads -->
+                <ellipse cx="6" cy="35" rx="4.5" ry="3.2" transform="rotate(-25 6 35)" />
+                <ellipse cx="21" cy="35" rx="4.5" ry="3.2" transform="rotate(-25 21 35)" />
+                <ellipse cx="36" cy="35" rx="4.5" ry="3.2" transform="rotate(-25 36 35)" />
+                <ellipse cx="51" cy="35" rx="4.5" ry="3.2" transform="rotate(-25 51 35)" />
+                
+                <!-- 4 Stems -->
+                <rect x="9" y="8" width="2.2" height="27" />
+                <rect x="24" y="8" width="2.2" height="27" />
+                <rect x="39" y="8" width="2.2" height="27" />
+                <rect x="54" y="8" width="2.2" height="27" />
+                
+                <!-- Double Top Beams -->
+                <rect x="9" y="6" width="47.2" height="4" rx="1" />
+                <rect x="9" y="13" width="47.2" height="4" rx="1" />
+            </svg>
+        `;
+
+        // --- Musical Data Dictionary ---
+        const FIGURE_DATA = {
+            'half': { name: 'Blanca', beats: 2, symbol: '𝅗𝅥', isSvg: false, isRest: false, audioDuration: 2, subNotes: [1, 1] },
+            'quarter': { name: 'Negra', beats: 1, symbol: '♩', isSvg: false, isRest: false, audioDuration: 1, subNotes: [1] },
+            'two-eighths': { name: '2 Corxeres', beats: 1, symbol: '♫', isSvg: false, isRest: false, audioDuration: 1, subNotes: [0.5, 0.5] },
+            'four-sixteenths': { name: '4 Semicorxeres', beats: 1, symbol: SVG_FOUR_SIXTEENTHS, isSvg: true, isRest: false, audioDuration: 1, subNotes: [0.25, 0.25, 0.25, 0.25] },
+            'eighth': { name: 'Corxera', beats: 0.5, symbol: '♪', isSvg: false, isRest: false, audioDuration: 0.5, subNotes: [0.5] },
+            'sixteenth': { name: 'Semicorxera', beats: 0.25, symbol: '𝅘𝅥𝅯', isSvg: false, isRest: false, audioDuration: 0.25, subNotes: [0.25] },
+            'rest-half': { name: 'Silenci de Blanca', beats: 2, symbol: '𝄼', isSvg: false, isRest: true, audioDuration: 2, subNotes: [2] },
+            'rest-quarter': { name: 'Silenci de Negra', beats: 1, symbol: '𝄽', isSvg: false, isRest: true, audioDuration: 1, subNotes: [1] },
+            'rest-eighth': { name: 'Silenci de Corxera', beats: 0.5, symbol: '𝄾', isSvg: false, isRest: true, audioDuration: 0.5, subNotes: [0.5] },
+            'rest-sixteenth': { name: 'Silenci de Semicorxera', beats: 0.25, symbol: '𝄿', isSvg: false, isRest: true, audioDuration: 0.25, subNotes: [0.25] }
+        };
+
+        // Level Palette Configuration
+        const LEVEL_PALETTES = {
+            1: {
+                figures: ['half', 'quarter', 'two-eighths'],
+                rests: ['rest-half', 'rest-quarter']
+            },
+            2: {
+                figures: ['half', 'quarter', 'two-eighths', 'four-sixteenths'],
+                rests: ['rest-half', 'rest-quarter']
+            },
+            3: {
+                figures: ['half', 'quarter', 'eighth'],
+                rests: ['rest-half', 'rest-quarter', 'rest-eighth']
+            },
+            4: {
+                figures: ['half', 'quarter', 'eighth', 'sixteenth'],
+                rests: ['rest-half', 'rest-quarter', 'rest-eighth', 'rest-sixteenth']
+            }
+        };
+
+        const TS_MAX_BEATS = {
+            '2/4': 2,
+            '3/4': 3,
+            '4/4': 4
+        };
+
+        const TS_DESCRIPTIONS = {
+            '2/4': '2 temps per compàs (mètrica binària).',
+            '3/4': '3 temps per compàs (mètrica ternària).',
+            '4/4': '4 temps per compàs (mètrica quaternària).'
+        };
+
+        // --- Application State ---
+        const FIXED_BPM = 66; // Fixed at 66 BPM
+        let currentLevel = 1;
+        let timeSignature = '2/4';
+        let singleMeasure = [];
+        let isPlaying = false;
+        let playbackTimeoutId = null;
+        let audioCtx = null;
+        let draggedPaletteType = null;
+        let draggedItemIndex = null;
+        let activeTab = 'figures';
+
+        // --- Initialize Page ---
+        window.onload = function() {
+            renderPalette();
+            renderMeasure();
+        };
+
+        // --- Level Selection Logic ---
+        function selectLevel(level) {
+            currentLevel = level;
+            document.getElementById('current-level-badge').innerText = `Nivell ${level}`;
+            document.getElementById('level-modal').classList.add('hidden');
+            clearMeasure();
+            renderPalette();
+        }
+
+        function openLevelModal() {
+            if (isPlaying) stopPlayback();
+            document.getElementById('level-modal').classList.remove('hidden');
+        }
+
+        // --- Render Palette Items according to active level ---
+        function renderPalette() {
+            const figContainer = document.getElementById('tab-content-figures');
+            const restContainer = document.getElementById('tab-content-rests');
+
+            figContainer.innerHTML = '';
+            restContainer.innerHTML = '';
+
+            const levelConfig = LEVEL_PALETTES[currentLevel];
+
+            // Render Figures
+            levelConfig.figures.forEach(key => {
+                const item = FIGURE_DATA[key];
+                figContainer.appendChild(createPaletteButton(key, item, false));
+            });
+
+            // Render Silencis
+            levelConfig.rests.forEach(key => {
+                const item = FIGURE_DATA[key];
+                restContainer.appendChild(createPaletteButton(key, item, true));
+            });
+        }
+
+        function createPaletteButton(key, item, isRest) {
+            const btn = document.createElement('button');
+            btn.draggable = true;
+            btn.ondragstart = (e) => handlePaletteDragStart(e, key);
+            btn.onclick = () => addFigure(key);
+            btn.className = `flex-1 min-w-[120px] bg-slate-700/50 hover:${isRest ? 'bg-amber-900/30 border-amber-500' : 'bg-purple-900/30 border-purple-500'} dark:bg-slate-700/50 light:bg-slate-50 light:hover:bg-purple-50 border border-slate-600 dark:border-slate-600 light:border-slate-200 p-2.5 rounded-xl flex items-center space-x-2.5 transition group text-left cursor-pointer shadow-sm`;
+
+            const iconColor = isRest ? 'text-amber-300 group-hover:text-amber-400 light:text-amber-600' : 'text-purple-300 group-hover:text-purple-400 light:text-purple-700';
+            const durationColor = isRest ? 'text-amber-400 light:text-amber-700' : 'text-purple-400 light:text-purple-700';
+
+            const symbolMarkup = item.isSvg ? item.symbol : item.symbol;
+
+            btn.innerHTML = `
+                <span class="w-10 h-10 bg-slate-900 dark:bg-slate-900 light:bg-white rounded-lg border border-slate-600 dark:border-slate-600 light:border-slate-300 flex items-center justify-center text-2xl font-bold ${iconColor} shrink-0 shadow-inner">
+                    ${symbolMarkup}
+                </span>
+                <div>
+                    <div class="text-xs font-bold text-white dark:text-white light:text-slate-900 leading-tight">${item.name}</div>
+                    <div class="text-[10px] ${durationColor} font-semibold">${item.beats} t</div>
+                </div>
+            `;
+
+            return btn;
+        }
+
+        // --- Dark / Light Mode Switcher ---
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-toggle-icon');
+
+            if (body.classList.contains('dark')) {
+                // Switch to Light Mode
+                body.classList.remove('dark');
+                body.classList.add('bg-slate-100', 'text-slate-800');
+                themeIcon.className = 'fa-solid fa-moon text-lg';
+            } else {
+                // Switch to Dark Mode (Default)
+                body.classList.add('dark');
+                body.classList.remove('bg-slate-100', 'text-slate-800');
+                themeIcon.className = 'fa-solid fa-sun text-lg';
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const figuresBtn = document.getElementById('tab-btn-figures');
+            const restsBtn = document.getElementById('tab-btn-rests');
+            const figuresContent = document.getElementById('tab-content-figures');
+            const restsContent = document.getElementById('tab-content-rests');
+
+            if (tab === 'figures') {
+                figuresBtn.className = "px-4 py-1.5 rounded-lg text-xs font-extrabold flex items-center space-x-2 transition bg-purple-600 text-white shadow-sm";
+                restsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-extrabold text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white light:hover:text-slate-900 transition flex items-center space-x-2";
+                figuresContent.classList.remove('hidden');
+                restsContent.classList.add('hidden');
+            } else {
+                restsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-extrabold flex items-center space-x-2 transition bg-amber-500 text-white shadow-sm";
+                figuresBtn.className = "px-4 py-1.5 rounded-lg text-xs font-extrabold text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white light:hover:text-slate-900 transition flex items-center space-x-2";
+                restsContent.classList.remove('hidden');
+                figuresContent.classList.add('hidden');
+            }
+        }
+
+        // --- Mètrica / Time Signature ---
+        function setTimeSignature(ts) {
+            if (isPlaying) stopPlayback();
+            timeSignature = ts;
+
+            document.querySelectorAll('#ts-buttons .ts-btn').forEach(btn => {
+                if (btn.getAttribute('data-ts') === ts) {
+                    btn.className = 'ts-btn active bg-purple-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-sm transition shadow-md shadow-purple-600/30';
+                } else {
+                    btn.className = 'ts-btn bg-slate-700 dark:bg-slate-700 light:bg-slate-100 text-slate-300 dark:text-slate-300 light:text-slate-700 hover:bg-slate-600 font-extrabold px-3 py-1.5 rounded-xl text-sm transition';
+                }
+            });
+
+            const parts = ts.split('/');
+            document.getElementById('ts-num').innerText = parts[0];
+            document.getElementById('ts-den').innerText = parts[1];
+            document.getElementById('ts-description-text').innerText = TS_DESCRIPTIONS[ts];
+
+            renderMeasure();
+        }
+
+        // --- Single Measure Operations ---
+        function addFigure(type) {
+            singleMeasure.push(type);
+            renderMeasure();
+        }
+
+        function removeFigure(index, e) {
+            if (e) e.stopPropagation();
+            singleMeasure.splice(index, 1);
+            renderMeasure();
+        }
+
+        function clearMeasure() {
+            singleMeasure = [];
+            if (isPlaying) stopPlayback();
+            renderMeasure();
+        }
+
+        function calculateBeats() {
+            return singleMeasure.reduce((sum, key) => sum + (FIGURE_DATA[key]?.beats || 0), 0);
+        }
+
+        function getMaxBeats() {
+            return TS_MAX_BEATS[timeSignature] || 2;
+        }
+
+        // --- Drag & Drop Handlers ---
+        function handlePaletteDragStart(e, type) {
+            draggedPaletteType = type;
+            draggedItemIndex = null;
+            e.dataTransfer.setData('text/plain', type);
+        }
+
+        function handleItemDragStart(e, index) {
+            draggedPaletteType = null;
+            draggedItemIndex = index;
+            e.dataTransfer.setData('text/plain', 'reorder');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (draggedPaletteType) {
+                addFigure(draggedPaletteType);
+                draggedPaletteType = null;
+            } else if (draggedItemIndex !== null) {
+                const item = singleMeasure.splice(draggedItemIndex, 1)[0];
+                singleMeasure.push(item);
+                draggedItemIndex = null;
+                renderMeasure();
+            }
+        }
+
+        // --- Render Single Measure & Progress Status ---
+        function renderMeasure() {
+            const container = document.getElementById('measure-items-container');
+            container.innerHTML = '';
+
+            const beats = calculateBeats();
+            const maxBeats = getMaxBeats();
+            const percent = Math.round((beats / maxBeats) * 100);
+
+            if (singleMeasure.length === 0) {
+                container.innerHTML = `
+                    <div class="text-xs text-slate-500 dark:text-slate-500 light:text-slate-400 italic w-full text-center select-none pointer-events-none">
+                        Prem una figura o arrossega-la ací per completar el compàs
+                    </div>
+                `;
+            } else {
+                singleMeasure.forEach((key, index) => {
+                    const item = FIGURE_DATA[key];
+                    const itemEl = document.createElement('div');
+                    itemEl.draggable = true;
+                    itemEl.id = `note-${index}`;
+                    itemEl.ondragstart = (e) => handleItemDragStart(e, index);
+                    itemEl.className = "note-element group relative flex flex-col items-center justify-center p-2 rounded-xl hover:bg-purple-900/40 cursor-grab active:cursor-grabbing transition";
+                    itemEl.title = `${item.name} (${item.beats} temps)`;
+
+                    const symbolDisplay = item.isSvg ? item.symbol : item.symbol;
+
+                    itemEl.innerHTML = `
+                        <span class="flex items-center justify-center transition-transform group-hover:scale-110 ${item.isRest ? 'text-amber-400' : 'text-purple-300'} ${item.isSvg ? 'w-12 h-10' : 'text-4xl font-bold select-none'}">
+                            ${symbolDisplay}
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 group-hover:text-purple-300 mt-0.5">
+                            ${item.beats}t
+                        </span>
+                        <button onclick="removeFigure(${index}, event)" class="absolute -top-1 -right-1 bg-rose-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition shadow">
+                            ✕
+                        </button>
+                    `;
+                    container.appendChild(itemEl);
+                });
+            }
+
+            // Status UI Elements
+            const measureCard = document.getElementById('measure-card');
+            const badge = document.getElementById('status-badge');
+            const statusDetails = document.getElementById('status-text-details');
+            const progressBar = document.getElementById('progress-bar');
+            const percentageBadge = document.getElementById('percentage-badge');
+
+            percentageBadge.innerText = `${percent}%`;
+
+            if (beats === maxBeats) {
+                // COMPLETE
+                measureCard.className = "bg-slate-800 dark:bg-slate-800 light:bg-white rounded-2xl p-6 shadow-xl border-2 border-emerald-500 ring-4 ring-emerald-500/20 transition-all";
+                badge.className = "text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                badge.innerText = "Compàs complet! ✔";
+                statusDetails.innerHTML = `<span class="text-emerald-400 font-extrabold">Compàs exacte: ${beats} / ${maxBeats} temps</span>`;
+                progressBar.className = "bg-emerald-500 h-full transition-all duration-300";
+                progressBar.style.width = "100%";
+            } else if (beats > maxBeats) {
+                // EXCEEDED
+                const overflow = parseFloat((beats - maxBeats).toFixed(2));
+                measureCard.className = "bg-slate-800 dark:bg-slate-800 light:bg-white rounded-2xl p-6 shadow-xl border-2 border-rose-500 ring-4 ring-rose-500/20 transition-all";
+                badge.className = "text-xs font-extrabold px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                badge.innerText = "Excedit ✖";
+                statusDetails.innerHTML = `<span class="text-rose-400">Sobren ${overflow} temps (${beats} / ${maxBeats})</span>`;
+                progressBar.className = "bg-rose-500 h-full transition-all duration-300";
+                progressBar.style.width = "100%";
+            } else {
+                // INCOMPLETE
+                const remaining = parseFloat((maxBeats - beats).toFixed(2));
+                measureCard.className = "bg-slate-800 dark:bg-slate-800 light:bg-white rounded-2xl p-6 shadow-xl border-2 border-slate-700 dark:border-slate-700 light:border-slate-200 transition-all";
+                badge.className = "text-xs font-extrabold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                badge.innerText = "Incomplet";
+                statusDetails.innerHTML = `<span class="text-slate-300 dark:text-slate-300 light:text-slate-700">Falten ${remaining} temps (${beats} / ${maxBeats})</span>`;
+                progressBar.className = "bg-purple-500 h-full transition-all duration-300";
+                progressBar.style.width = `${Math.min(100, percent)}%`;
+            }
+        }
+
+        // --- Web Audio Synthesizer ---
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(freq, duration) {
+            initAudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration - 0.02);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playMetronomeTick() {
+            initAudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(750, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.04);
+        }
+
+        // --- Playback Controller (Fixed @ 66 BPM) ---
+        async function togglePlayback() {
+            if (isPlaying) {
+                stopPlayback();
+                return;
+            }
+
+            if (singleMeasure.length === 0) {
+                alert("Afegeix alguna figura o silenci per poder reproduir.");
+                return;
+            }
+
+            isPlaying = true;
+            document.getElementById('play-btn').innerHTML = `<i class="fa-solid fa-pause text-sm"></i><span>Pausar</span>`;
+            document.getElementById('play-btn').className = 'bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-amber-500/25 flex items-center space-x-2 transition';
+
+            const beatDurationMs = (60 / FIXED_BPM) * 1000;
+
+            for (let i = 0; i < singleMeasure.length; i++) {
+                if (!isPlaying) break;
+
+                const itemKey = singleMeasure[i];
+                const figure = FIGURE_DATA[itemKey];
+                const noteElement = document.getElementById(`note-${i}`);
+
+                if (noteElement) noteElement.classList.add('note-playing');
+
+                // Play sub-notes (e.g. 2 eighths or 4 sixteenths)
+                const subNotes = figure.subNotes || [figure.audioDuration];
+                for (let subDuration of subNotes) {
+                    if (!isPlaying) break;
+                    
+                    if (!figure.isRest) {
+                        playSound(440, (subDuration * beatDurationMs) / 1000);
+                    } else {
+                        playMetronomeTick();
+                    }
+
+                    const subDelay = subDuration * beatDurationMs;
+                    await new Promise(res => { playbackTimeoutId = setTimeout(res, subDelay); });
+                }
+
+                if (noteElement) noteElement.classList.remove('note-playing');
+            }
+
+            stopPlayback();
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            if (playbackTimeoutId) clearTimeout(playbackTimeoutId);
+
+            document.querySelectorAll('.note-playing').forEach(el => el.classList.remove('note-playing'));
+
+            const playBtn = document.getElementById('play-btn');
+            if (playBtn) {
+                playBtn.innerHTML = `<i class="fa-solid fa-play text-sm"></i><span>Reproduir</span>`;
+                playBtn.className = 'bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center space-x-2 transition';
+            }
+        }
+    </script>
+</body>
+</html>
